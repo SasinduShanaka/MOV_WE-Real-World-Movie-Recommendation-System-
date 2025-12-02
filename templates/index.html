@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Movie Recommender — Title + Genre Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #000000, #141414);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    .netflix-logo {
+      font-family: 'Bebas Neue', cursive;
+      color: #E50914;
+      font-size: 2.5rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .movie-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .movie-card:hover {
+      transform: scale(1.05);
+      z-index: 10;
+    }
+    .movie-card img {
+      border-radius: 4px;
+    }
+    .search-input {
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid #333;
+      color: white;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #E50914;
+      background: rgba(0, 0, 0, 0.85);
+    }
+    .search-btn {
+      background: #E50914;
+      transition: background 0.3s ease;
+    }
+    .search-btn:hover {
+      background: #F40612;
+    }
+    .netflix-alert {
+      background: rgba(229, 9, 20, 0.1);
+      border-left: 4px solid #E50914;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Netflix-style Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="netflix-logo">MOVWEE</div>
+      <div class="text-gray-400 text-sm hidden md:block">Discover your next favorite movie</div>
+    </div>
+
+    <!-- Search Section -->
+    <form method="POST" class="mb-12 max-w-3xl mx-auto">
+      <div class="flex flex-col md:flex-row gap-3">
+        <input list="titles" name="movie" 
+               placeholder="Search for movies, genres, or keywords..."
+               value="{{ query }}" 
+               class="search-input flex-1 p-4 rounded text-lg placeholder-gray-500" 
+               required>
+        <datalist id="titles">
+          {% for t in titles %}
+            <option value="{{ t }}"></option>
+          {% endfor %}
+        </datalist>
+        <button class="search-btn px-8 py-4 text-white rounded font-semibold text-lg">
+          Search
+        </button>
+      </div>
+    </form>
+
+    <!-- Alert Messages -->
+    {% if query and not results %}
+      <div class="netflix-alert p-5 rounded mb-8 max-w-3xl mx-auto">
+        <p class="text-white"><strong>No results found</strong> for "<em class="text-red-400">{{ query }}</em>"</p>
+        <p class="text-gray-400 text-sm mt-2">Try a different keyword or select from suggestions</p>
+      </div>
+    {% endif %}
+
+    {% if used_title %}
+      <div class="mb-8">
+        <h2 class="text-white text-2xl font-semibold">Because you searched for <span class="text-red-500">{{ used_title }}</span></h2>
+        <div class="h-1 w-20 bg-red-600 mt-2"></div>
+      </div>
+    {% elif query %}
+      <div class="mb-8">
+        <h2 class="text-white text-2xl font-semibold">Results for <span class="text-red-500">{{ query }}</span></h2>
+        <div class="h-1 w-20 bg-red-600 mt-2"></div>
+      </div>
+    {% endif %}
+
+    <!-- Movie Grid -->
+    {% if results %}
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {% for r in results %}
+          <div class="movie-card">
+            {% if r.poster_url %}
+              <img src="{{ r.poster_url }}" alt="{{ r.title }}" class="w-full h-auto">
+            {% else %}
+              <div class="aspect-[2/3] bg-gradient-to-br from-gray-800 to-gray-900 rounded flex items-center justify-center">
+                <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
+                </svg>
+              </div>
+            {% endif %}
+            <div class="text-white text-sm font-medium mt-2 line-clamp-2">{{ r.title }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</body>
+</html>
