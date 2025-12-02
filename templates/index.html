@@ -3,66 +3,169 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Movie Recommender — Title + Genre Search</title>
+  <title>MOVWEE — Your Movie Recommender</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #000000, #141414);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    .netflix-logo {
+      font-family: 'Bebas Neue', cursive;
+      color: #E50914;
+      font-size: 2.5rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .movie-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .movie-card:hover {
+      transform: scale(1.08);
+      z-index: 10;
+      background: rgba(40, 40, 40, 0.95);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+    }
+    .movie-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .search-input {
+      background: rgba(0, 0, 0, 0.75);
+      border: 2px solid #333;
+      color: white;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #E50914;
+      background: rgba(0, 0, 0, 0.85);
+      box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
+    }
+    .search-input::placeholder {
+      color: #8c8c8c;
+    }
+    .search-btn {
+      background: #E50914;
+      transition: all 0.3s ease;
+    }
+    .search-btn:hover {
+      background: #F40612;
+      box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+    }
+    .netflix-alert {
+      background: rgba(229, 9, 20, 0.15);
+      border-left: 4px solid #E50914;
+    }
+    .rating-badge {
+      background: rgba(229, 9, 20, 0.25);
+      color: #FFD700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .section-title {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .section-underline {
+      height: 3px;
+      width: 60px;
+      background: #E50914;
+      margin-bottom: 1.5rem;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
-  <div class="max-w-6xl mx-auto">
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-7xl mx-auto">
 
-    <h1 class="text-3xl font-bold mb-4 text-center">🎬 Movie Recommender</h1>
+    <!-- Netflix-style Header -->
+    <div class="flex items-center justify-between mb-10">
+      <div class="netflix-logo">MOVWEE</div>
+      <div class="text-gray-400 text-sm hidden md:block">Discover your next favorite movie</div>
+    </div>
 
-    <form method="POST" class="mb-6 max-w-2xl mx-auto">
-      <input list="titles" name="movie" placeholder="Type a movie title or a keyword (e.g., 'horror', 'action', 'zombie')"
-             value="{{ query }}" class="w-full p-3 border rounded" required>
-      <datalist id="titles">
-        {% for t in titles %}
-          <option value="{{ t }}"></option>
-        {% endfor %}
-      </datalist>
-      <button class="mt-3 px-4 py-2 bg-blue-600 text-white rounded">Search</button>
+    <!-- Search Section -->
+    <form method="POST" class="mb-12 max-w-3xl mx-auto">
+      <div class="flex flex-col md:flex-row gap-3">
+        <input list="titles" name="movie" 
+               placeholder="Search for movies, genres, or keywords..."
+               value="{{ query }}" 
+               class="search-input flex-1 p-4 rounded-lg text-lg" 
+               required>
+        <datalist id="titles">
+          {% for t in titles %}
+            <option value="{{ t }}"></option>
+          {% endfor %}
+        </datalist>
+        <button class="search-btn px-8 py-4 text-white rounded-lg font-semibold text-lg">
+          Search
+        </button>
+      </div>
     </form>
 
+    <!-- Alert Messages -->
     {% if query and not results %}
-      <div class="p-4 bg-yellow-100 border-l-4 border-yellow-400 mb-6">
-        <strong>No results found</strong> for "<em>{{ query }}</em>" — try a different keyword or pick a title from suggestions.
+      <div class="netflix-alert p-6 rounded-lg mb-10 max-w-3xl mx-auto">
+        <p class="text-white text-lg"><strong>No results found</strong> for "<em class="text-red-400">{{ query }}</em>"</p>
+        <p class="text-gray-400 text-sm mt-2">Try a different keyword or select from suggestions</p>
       </div>
     {% endif %}
 
     {% if used_title %}
-      <div class="p-3 bg-blue-50 border-l-4 border-blue-400 mb-4 max-w-2xl mx-auto text-center">
-        Showing movies similar to: <strong>{{ used_title }}</strong>
+      <div class="mb-8">
+        <h2 class="section-title">Because you searched for <span class="text-red-500">{{ used_title }}</span></h2>
+        <div class="section-underline"></div>
       </div>
     {% elif query %}
-      <div class="p-3 bg-green-50 border-l-4 border-green-400 mb-4 max-w-2xl mx-auto text-center">
-        Showing results for keyword: <strong>{{ query }}</strong>
+      <div class="mb-8">
+        <h2 class="section-title">Results for <span class="text-red-500">{{ query }}</span></h2>
+        <div class="section-underline"></div>
       </div>
     {% endif %}
 
+    <!-- Movie Grid -->
     {% if results %}
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {% for r in results %}
-          <div class="bg-white p-3 rounded shadow hover:shadow-lg transition">
+          <div class="movie-card">
             {% if r.poster_url %}
               <a href="{{ r.tmdb_link }}" target="_blank" rel="noopener noreferrer">
-                <img src="{{ r.poster_url }}" alt="{{ r.title }}" class="w-full h-auto rounded mb-2">
+                <img src="{{ r.poster_url }}" alt="{{ r.title }}">
               </a>
             {% else %}
-              <div class="h-44 bg-gray-200 mb-2 rounded flex items-center justify-center">
-                <span class="text-gray-500 text-sm">No Image</span>
+              <div class="aspect-[2/3] bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
+                </svg>
               </div>
             {% endif %}
 
-            <div class="text-sm font-semibold text-center">{{ r.title }}
-              {% if r.year %}<span class="text-gray-500 font-normal"> ({{ r.year }})</span>{% endif %}
-            </div>
+            <div class="p-3">
+              <div class="text-white text-sm font-semibold mb-1">
+                {{ r.title }}
+              </div>
+              {% if r.year %}
+              <div class="text-gray-400 text-xs mb-2">({{ r.year }})</div>
+              {% endif %}
 
-            <div class="text-xs text-gray-600 mt-1 text-center">
-              {% if r.rating %}⭐ {{ r.rating }}{% endif %}
-            </div>
+              {% if r.rating %}
+              <div class="rating-badge text-xs font-medium mb-2">
+                ⭐ {{ r.rating }}
+              </div>
+              {% endif %}
 
-            {% if r.overview %}
-            <p class="mt-2 text-xs text-gray-700" style="line-height:1.15;">{{ r.overview }}</p>
-            {% endif %}
+              {% if r.overview %}
+              <p class="mt-2 text-xs text-gray-400 line-clamp-3 leading-tight">{{ r.overview }}</p>
+              {% endif %}
+            </div>
           </div>
         {% endfor %}
       </div>
